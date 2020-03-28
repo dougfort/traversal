@@ -128,6 +128,41 @@ func TestListPredicate(t *testing.T) {
 	}
 }
 
+func TestExample(t *testing.T) {
+	var err error
+	var buffer bytes.Buffer
+	data := `{
+		"name":"John",
+		"age":30,
+		"cars": [
+		  { "name":"Ford", "models":[ "Fiesta", "Focus", "Mustang" ] },
+		  { "name":"BMW", "models":[ "320", "X3", "X5" ] },
+		  { "name":"Fiat", "models":[ "500", "Panda" ] }
+		]
+	   }`
+	predicate := func(r json.RawMessage) bool {
+		m, err := tr.GetMapFromRawMessage(r)
+		if err != nil {
+			return false
+		}
+		n, err := tr.GetStringFromRawMessage(m["name"])
+		if err != nil {
+			return false
+		}
+		return n == "BMW"
+	}
+	err = tr.Start([]byte(data)).
+		DictKey("cars").
+		ListPredicate(predicate).
+		DictKey("models").
+		End(&buffer)
+	if err != nil {
+		t.Fatalf("error from valid JSON: %s", err)
+	}
+
+	t.Logf("%s", buffer.String())
+}
+
 func TestTraversal(t *testing.T) {
 	const testFilePath = "configs.json"
 	data, err := ioutil.ReadFile(testFilePath)
@@ -169,6 +204,8 @@ func TestTraversal(t *testing.T) {
 			}
 			return n == "gm.metrics"
 		}).
+		DictKey("typed_config").
+		DictKey("value").
 		End(os.Stdout)
 	if err != nil {
 		t.Fatalf("Traversal failed: %s", err)

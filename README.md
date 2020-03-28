@@ -1,7 +1,56 @@
 # Traverse JSON Data
 
-Use Case: process a subset JSON encoded text.
+## Synopsis
 
-The go RawMessage <https://golang.org/pkg/encoding/json/#RawMessage> enables stepping through JSON without parsing all of it.
+Traverse is a `go` language utility for 'traversing' a block of JSON encoded text
+and returning a selected piece of content.
 
-This package facilitates the stepping by implementing a form of the Builder Pattern <https://en.wikipedia.org/wiki/Builder_pattern>
+Starting with a `go` [RawMessage](<https://golang.org/pkg/encoding/json/#RawMessage>),
+traverse subdivides `RawMessage`s until we have the one we want.
+
+We specify the traversal using the [Builder Pattern]( <https://en.wikipedia.org/wiki/Builder_pattern>).
+The [ZeroLog](https://github.com/rs/zerolog) logger also makes excellent use of this pattern.
+
+## Example
+
+example copied from [w3schools.com](https://www.w3schools.com/js/js_json_arrays.asp)
+
+```json
+{
+  "name":"John",
+  "age":30,
+  "cars": [
+    { "name":"Ford", "models":[ "Fiesta", "Focus", "Mustang" ] },
+    { "name":"BMW", "models":[ "320", "X3", "X5" ] },
+    { "name":"Fiat", "models":[ "500", "Panda" ] }
+  ]
+}
+```
+
+ We want to extract a list of the BMW models which John owns.
+
+```golang
+    predicate := func(r json.RawMessage) bool {
+        m, err := tr.GetMapFromRawMessage(r)
+        if err != nil {
+            return false
+        }
+        n, err := tr.GetStringFromRawMessage(m["name"])
+        if err != nil {
+            return false
+        }
+        return n == "BMW"
+    }
+
+    tr.Start([]byte(data)).
+            DictKey("cars").
+            ListPredicate(predicate).
+            DictKey("models").
+            End(os.stdout)
+```
+
+This example prints stdout:
+
+```bash
+[ "320", "X3", "X5" ]
+```

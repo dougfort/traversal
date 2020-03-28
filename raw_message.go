@@ -29,6 +29,16 @@ func GetStringFromRawMessage(r json.RawMessage) (string, error) {
 	return s, nil
 }
 
+// GetBoolFromRawMessage returns a boolean from a JSON string
+//
+// given:
+//
+// true (string)
+//
+// expecting:
+//
+// true (boolean)
+//
 func GetBoolFromRawMessage(r json.RawMessage) (bool, error) {
 	b, err := r.MarshalJSON()
 	if err != nil {
@@ -42,6 +52,16 @@ func GetBoolFromRawMessage(r json.RawMessage) (bool, error) {
 	return i, nil
 }
 
+// GetInt32FromRawMessage returns a number from a JSON string
+//
+// given:
+//
+// 42 (string)
+//
+// expecting:
+//
+// 42 (int32)
+//
 func GetInt32FromRawMessage(r json.RawMessage) (int32, error) {
 	b, err := r.MarshalJSON()
 	if err != nil {
