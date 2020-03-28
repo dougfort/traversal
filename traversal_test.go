@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -14,7 +14,6 @@ func TestTraversal(t *testing.T) {
 		t.Fatalf("ioutil.ReadFile(%s) failed: %s", testFilePath, err)
 	}
 
-	var buffer bytes.Buffer
 	err = Start(data).
 		DictKey("configs").
 		ListPredicate(func(r json.RawMessage) bool {
@@ -49,10 +48,8 @@ func TestTraversal(t *testing.T) {
 			}
 			return n == "gm.metrics"
 		}).
-		JSON(&buffer)
+		JSON(os.Stdout)
 	if err != nil {
 		t.Fatalf("Traversal failed: %s", err)
 	}
-
-	t.Logf("%s", buffer.String())
 }

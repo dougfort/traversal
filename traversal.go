@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 
 	"github.com/pkg/errors"
@@ -22,17 +21,8 @@ func Start(data []byte) *Traversal {
 	return &t
 }
 
-// Dump write the remaining content to stdout
-func (t *Traversal) Dump() error {
-	if t.err != nil {
-		return t.err
-	}
-
-	fmt.Printf("%s", t.msg)
-	return nil
-}
-
-// JSON returns the content as JSON
+// JSON copies the interal state to a writer
+// Note that a useful too in debugging is to dump to os.Stdout
 func (t *Traversal) JSON(w io.Writer) error {
 	if t.err != nil {
 		return t.err
