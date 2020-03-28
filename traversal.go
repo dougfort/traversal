@@ -29,7 +29,7 @@ func Start(data []byte) *Traversal {
 
 // End terminates a Traversal
 // If there is no error, End writes the internal state to the writer
-// Note that a useful too in debugging is to dump to os.Stdout
+// Note that a useful tool in debugging is to dump to os.Stdout
 func (t *Traversal) End(w io.Writer) error {
 	if t.err != nil {
 		return t.err
@@ -48,7 +48,7 @@ func (t *Traversal) End(w io.Writer) error {
 	return nil
 }
 
-// DictKey selects a key from a JSON dict (go map)
+// ObjectKey selects a key from a JSON object (go map)
 //
 // given:
 //
@@ -61,7 +61,7 @@ func (t *Traversal) End(w io.Writer) error {
 // expecting
 //
 // \"http\" (the output is JSON)
-func (t *Traversal) DictKey(key string) *Traversal {
+func (t *Traversal) ObjectKey(key string) *Traversal {
 	if t.err != nil {
 		return t
 	}
@@ -84,8 +84,8 @@ func (t *Traversal) DictKey(key string) *Traversal {
 	return &Traversal{err: nil, msg: msg}
 }
 
-// ListSingleton selects the only entry from a list.
-// It will fail if the list does not have exactly one item.
+// ArraySingleton selects the only entry from an Array.
+// It will fail if the Array does not have exactly one item.
 //
 // given:
 //
@@ -97,7 +97,7 @@ func (t *Traversal) DictKey(key string) *Traversal {
 //
 // {"key": "value"}
 //
-func (t *Traversal) ListSingleton() *Traversal {
+func (t *Traversal) ArraySingleton() *Traversal {
 	if t.err != nil {
 		return t
 	}
@@ -112,7 +112,7 @@ func (t *Traversal) ListSingleton() *Traversal {
 
 	if len(s) != 1 {
 		return &Traversal{
-			err: errors.Errorf("List has %d items", len(s)),
+			err: errors.Errorf("Array has %d items", len(s)),
 			msg: nil,
 		}
 	}
@@ -120,7 +120,7 @@ func (t *Traversal) ListSingleton() *Traversal {
 	return &Traversal{err: nil, msg: s[0]}
 }
 
-// ListPredicate selects an entry from a list based on a predicate
+// ArrayPredicate selects an entry from an Array based on a predicate
 //
 // given:
 //
@@ -148,7 +148,7 @@ func (t *Traversal) ListSingleton() *Traversal {
 //
 // {"key3": "value3"}
 //
-func (t *Traversal) ListPredicate(p func(json.RawMessage) bool) *Traversal {
+func (t *Traversal) ArrayPredicate(p func(json.RawMessage) bool) *Traversal {
 	if t.err != nil {
 		return t
 	}
@@ -168,7 +168,7 @@ func (t *Traversal) ListPredicate(p func(json.RawMessage) bool) *Traversal {
 	}
 
 	return &Traversal{
-		err: errors.Errorf("No list item satisfies the predicate: %s", t.msg),
+		err: errors.Errorf("No Array item satisfies the predicate: %s", t.msg),
 		msg: nil,
 	}
 }

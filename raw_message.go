@@ -75,6 +75,22 @@ func GetInt32FromRawMessage(r json.RawMessage) (int32, error) {
 	return i, nil
 }
 
+// GetSliceFromRawMessage returns a slice of json.RawMessage a JSON RawMessage
+//
+// given:
+//
+// [
+//   "a": "a1",
+//   "b": "b1"
+// ]
+//
+// expecting:
+//
+// []json.RawMessage{
+//    json.RawMessage{"a": "a1"},
+//    json.RawMessage{"b": "b1"}
+// }
+//
 func GetSliceFromRawMessage(r json.RawMessage) ([]json.RawMessage, error) {
 	b, err := r.MarshalJSON()
 	if err != nil {
@@ -99,30 +115,4 @@ func GetMapFromRawMessage(r json.RawMessage) (map[string]json.RawMessage, error)
 	}
 
 	return m, nil
-}
-
-func GetSliceOfMapsFromRawMessage(r json.RawMessage) ([]map[string]json.RawMessage, error) {
-	b, err := r.MarshalJSON()
-	if err != nil {
-		return nil, errors.Wrapf(err, "MarshalJSON(%s) failed: %s", r, err)
-	}
-	var sm []json.RawMessage
-	if err = json.Unmarshal(b, &sm); err != nil {
-		return nil, errors.Wrapf(err, "json.Unmarshal(%s failed: %s", b, err)
-	}
-
-	var result []map[string]json.RawMessage
-	for _, m := range sm {
-		c, err := m.MarshalJSON()
-		if err != nil {
-			return nil, errors.Wrapf(err, "MarshalJSON(%s) failed: %s", m, err)
-		}
-		var x map[string]json.RawMessage
-		if err = json.Unmarshal(c, &x); err != nil {
-			return nil, errors.Wrapf(err, "json.Unmarshal(%s failed: %s", c, err)
-		}
-		result = append(result, x)
-	}
-
-	return result, nil
 }

@@ -31,7 +31,7 @@ func TestStartAndEnd(t *testing.T) {
 	}
 }
 
-func TestDictKey(t *testing.T) {
+func TestObjectKey(t *testing.T) {
 	var err error
 	var buffer bytes.Buffer
 	data := `{
@@ -40,7 +40,7 @@ func TestDictKey(t *testing.T) {
 	}`
 
 	// valid key
-	err = tr.Start([]byte(data)).DictKey("category").End(&buffer)
+	err = tr.Start([]byte(data)).ObjectKey("category").End(&buffer)
 	if err != nil {
 		t.Fatalf("error from valid JSON: %s", err)
 	}
@@ -50,14 +50,14 @@ func TestDictKey(t *testing.T) {
 	}
 
 	// invalid key
-	err = tr.Start([]byte(data)).DictKey("foot").End(&buffer)
+	err = tr.Start([]byte(data)).ObjectKey("foot").End(&buffer)
 	if err == nil {
 		t.Fatal("expecting error for invalid key")
 	}
 
 }
 
-func TestListSingleton(t *testing.T) {
+func TestArraySingleton(t *testing.T) {
 	var err error
 	var buffer bytes.Buffer
 	data := `[
@@ -65,7 +65,7 @@ func TestListSingleton(t *testing.T) {
 	]`
 
 	// valid key
-	err = tr.Start([]byte(data)).ListSingleton().End(&buffer)
+	err = tr.Start([]byte(data)).ArraySingleton().End(&buffer)
 	if err != nil {
 		t.Fatalf("error from valid JSON: %s", err)
 	}
@@ -74,24 +74,24 @@ func TestListSingleton(t *testing.T) {
 		t.Fatalf("invalid output: expected '\"{\"name\": \"tagging\"}\"', found '%s'", buffer.String())
 	}
 
-	// empty list
-	err = tr.Start([]byte("[]")).ListSingleton().End(&buffer)
+	// empty Array
+	err = tr.Start([]byte("[]")).ArraySingleton().End(&buffer)
 	if err == nil {
-		t.Fatal("expecting error for empty list")
+		t.Fatal("expecting error for empty Array")
 	}
 
-	// too big list
+	// too big Array
 	bigData := `[
 		{"name": "tagging"},
 		{"category": "http"}
 	]`
-	err = tr.Start([]byte(bigData)).ListSingleton().End(&buffer)
+	err = tr.Start([]byte(bigData)).ArraySingleton().End(&buffer)
 	if err == nil {
-		t.Fatal("expecting error too big list")
+		t.Fatal("expecting error too big Array")
 	}
 }
 
-func TestListPredicate(t *testing.T) {
+func TestArrayPredicate(t *testing.T) {
 	var err error
 	var buffer bytes.Buffer
 	data := `[
@@ -112,7 +112,7 @@ func TestListPredicate(t *testing.T) {
 	}
 
 	// valid key
-	err = tr.Start([]byte(data)).ListPredicate(predicate).End(&buffer)
+	err = tr.Start([]byte(data)).ArrayPredicate(predicate).End(&buffer)
 	if err != nil {
 		t.Fatalf("error from valid JSON: %s", err)
 	}
@@ -121,10 +121,10 @@ func TestListPredicate(t *testing.T) {
 		t.Fatalf("invalid output: expected '\"{\"key3\": \"value3\"}\"', found '%s'", buffer.String())
 	}
 
-	// empty list
-	err = tr.Start([]byte("[]")).ListPredicate(predicate).End(&buffer)
+	// empty Array
+	err = tr.Start([]byte("[]")).ArrayPredicate(predicate).End(&buffer)
 	if err == nil {
-		t.Fatal("expecting error for empty list")
+		t.Fatal("expecting error for empty Array")
 	}
 }
 
@@ -152,9 +152,9 @@ func TestExample(t *testing.T) {
 		return n == "BMW"
 	}
 	err = tr.Start([]byte(data)).
-		DictKey("cars").
-		ListPredicate(predicate).
-		DictKey("models").
+		ObjectKey("cars").
+		ArrayPredicate(predicate).
+		ObjectKey("models").
 		End(&buffer)
 	if err != nil {
 		t.Fatalf("error from valid JSON: %s", err)
@@ -171,8 +171,8 @@ func TestTraversal(t *testing.T) {
 	}
 
 	err = tr.Start(data).
-		DictKey("configs").
-		ListPredicate(func(r json.RawMessage) bool {
+		ObjectKey("configs").
+		ArrayPredicate(func(r json.RawMessage) bool {
 			m, err := tr.GetMapFromRawMessage(r)
 			if err != nil {
 				return false
@@ -183,17 +183,17 @@ func TestTraversal(t *testing.T) {
 			}
 			return n == "type.googleapis.com/envoy.admin.v3.BootstrapConfigDump"
 		}).
-		DictKey("bootstrap").
-		DictKey("static_resources").
-		DictKey("listeners").
-		ListSingleton().
-		DictKey("filter_chains").
-		ListSingleton().
-		DictKey("filters").
-		ListSingleton().
-		DictKey("typed_config").
-		DictKey("http_filters").
-		ListPredicate(func(r json.RawMessage) bool {
+		ObjectKey("bootstrap").
+		ObjectKey("static_resources").
+		ObjectKey("listeners").
+		ArraySingleton().
+		ObjectKey("filter_chains").
+		ArraySingleton().
+		ObjectKey("filters").
+		ArraySingleton().
+		ObjectKey("typed_config").
+		ObjectKey("http_filters").
+		ArrayPredicate(func(r json.RawMessage) bool {
 			m, err := tr.GetMapFromRawMessage(r)
 			if err != nil {
 				return false
@@ -204,8 +204,8 @@ func TestTraversal(t *testing.T) {
 			}
 			return n == "gm.metrics"
 		}).
-		DictKey("typed_config").
-		DictKey("value").
+		ObjectKey("typed_config").
+		ObjectKey("value").
 		End(os.Stdout)
 	if err != nil {
 		t.Fatalf("Traversal failed: %s", err)

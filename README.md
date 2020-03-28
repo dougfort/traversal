@@ -27,7 +27,7 @@ example copied from [w3schools.com](https://www.w3schools.com/js/js_json_arrays.
 }
 ```
 
- We want to extract a list of the BMW models which John owns.
+ We want to extract an Array of the BMW models which John owns.
 
 ```golang
     predicate := func(r json.RawMessage) bool {
@@ -43,9 +43,9 @@ example copied from [w3schools.com](https://www.w3schools.com/js/js_json_arrays.
     }
 
     tr.Start([]byte(data)).
-            DictKey("cars").
-            ListPredicate(predicate).
-            DictKey("models").
+            ObjectKey("cars").
+            ArrayPredicate(predicate).
+            ObjectKey("models").
             End(os.stdout)
 ```
 
