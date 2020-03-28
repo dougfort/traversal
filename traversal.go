@@ -8,22 +8,29 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Traversal marks progress in traversing a JSON graph
+// Traversal holds the state while travering JSON
 type Traversal struct {
 	err error
 	msg json.RawMessage
 }
 
-// Start a Traversal with JSON bytes
+// Start begins a Traversal by ijnitializing the internal state with JSON data.
 func Start(data []byte) *Traversal {
 	var t Traversal
-	t.err = t.msg.UnmarshalJSON(data)
+
+	if json.Valid(data) {
+		t.err = t.msg.UnmarshalJSON(data)
+	} else {
+		t.err = errors.Errorf("Invalid JSON")
+	}
+
 	return &t
 }
 
-// JSON copies the interal state to a writer
+// End terminates a Traversal
+// If there is no error, End writes the internal state to the writer
 // Note that a useful too in debugging is to dump to os.Stdout
-func (t *Traversal) JSON(w io.Writer) error {
+func (t *Traversal) End(w io.Writer) error {
 	if t.err != nil {
 		return t.err
 	}
@@ -41,13 +48,25 @@ func (t *Traversal) JSON(w io.Writer) error {
 	return nil
 }
 
-// DictKey selects a key from a map
+// DictKey selects a key from a JSON dict (go map)
+//
+// given:
+//
+// {
+// 	"name": "tagging",
+// 	"category": "http"
+// }
+// key = "category"
+//
+// expecting
+//
+// \"http\" (the output is JSON)
 func (t *Traversal) DictKey(key string) *Traversal {
 	if t.err != nil {
 		return t
 	}
 
-	m, err := getMapFromRawMessage(t.msg)
+	m, err := GetMapFromRawMessage(t.msg)
 	if err != nil {
 		return &Traversal{
 			err: errors.Wrap(err, "getMapFromRawMessage"),
@@ -65,13 +84,25 @@ func (t *Traversal) DictKey(key string) *Traversal {
 	return &Traversal{err: nil, msg: msg}
 }
 
-// ListIndex selects an entry from a list
-func (t *Traversal) ListIndex(index int) *Traversal {
+// ListSingleton selects the only entry from a list.
+// It will fail if the list does not have exactly one item.
+//
+// given:
+//
+// [
+//	{"key": "value"}
+// ]
+//
+// expecting
+//
+// {"key": "value"}
+//
+func (t *Traversal) ListSingleton() *Traversal {
 	if t.err != nil {
 		return t
 	}
 
-	s, err := getSliceFromRawMessage(t.msg)
+	s, err := GetSliceFromRawMessage(t.msg)
 	if err != nil {
 		return &Traversal{
 			err: errors.Wrap(err, "getSliceFromRawMessage"),
@@ -79,23 +110,50 @@ func (t *Traversal) ListIndex(index int) *Traversal {
 		}
 	}
 
-	if index >= len(s) {
+	if len(s) != 1 {
 		return &Traversal{
-			err: errors.Errorf("Invalid index %d of %d", index, len(s)),
+			err: errors.Errorf("List has %d items", len(s)),
 			msg: nil,
 		}
 	}
 
-	return &Traversal{err: nil, msg: s[index]}
+	return &Traversal{err: nil, msg: s[0]}
 }
 
 // ListPredicate selects an entry from a list based on a predicate
+//
+// given:
+//
+// [
+//	{"key1": "value1"},
+//	{"key2": "value2"},
+//	{"key3": "value3"}
+// ]
+//
+// with predicate
+//
+// func(r json.RawMessage) bool {
+//		m, err := GetMapFromRawMessage(r)
+//	    if err != nil {
+//          return false
+//	    }
+//	    n, err := GetStringFromRawMessage(m["key3"])
+//	    if err != nil {
+//		    return false
+//      }
+//      return n == "value3"
+// }
+//
+// expecting
+//
+// {"key3": "value3"}
+//
 func (t *Traversal) ListPredicate(p func(json.RawMessage) bool) *Traversal {
 	if t.err != nil {
 		return t
 	}
 
-	s, err := getSliceFromRawMessage(t.msg)
+	s, err := GetSliceFromRawMessage(t.msg)
 	if err != nil {
 		return &Traversal{
 			err: errors.Wrap(err, "getSliceFromRawMessage"),

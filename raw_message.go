@@ -6,7 +6,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-func getStringFromRawMessage(r json.RawMessage) (string, error) {
+// GetStringFromRawMessage returns a string from a JSON string
+//
+// given:
+//
+// \"value\" (with quotes)
+//
+// expecting:
+//
+// value
+//
+func GetStringFromRawMessage(r json.RawMessage) (string, error) {
 	b, err := r.MarshalJSON()
 	if err != nil {
 		return "", errors.Wrapf(err, "MarshalJSON(%s) failed: %s", r, err)
@@ -19,7 +29,7 @@ func getStringFromRawMessage(r json.RawMessage) (string, error) {
 	return s, nil
 }
 
-func getBoolFromRawMessage(r json.RawMessage) (bool, error) {
+func GetBoolFromRawMessage(r json.RawMessage) (bool, error) {
 	b, err := r.MarshalJSON()
 	if err != nil {
 		return false, errors.Wrapf(err, "MarshalJSON(%s) failed: %s", r, err)
@@ -32,7 +42,7 @@ func getBoolFromRawMessage(r json.RawMessage) (bool, error) {
 	return i, nil
 }
 
-func getInt32FromRawMessage(r json.RawMessage) (int32, error) {
+func GetInt32FromRawMessage(r json.RawMessage) (int32, error) {
 	b, err := r.MarshalJSON()
 	if err != nil {
 		return -1, errors.Wrapf(err, "MarshalJSON(%s) failed: %s", r, err)
@@ -45,7 +55,7 @@ func getInt32FromRawMessage(r json.RawMessage) (int32, error) {
 	return i, nil
 }
 
-func getSliceFromRawMessage(r json.RawMessage) ([]json.RawMessage, error) {
+func GetSliceFromRawMessage(r json.RawMessage) ([]json.RawMessage, error) {
 	b, err := r.MarshalJSON()
 	if err != nil {
 		return nil, errors.Wrapf(err, "MarshalJSON(%s) failed: %s", r, err)
@@ -58,7 +68,7 @@ func getSliceFromRawMessage(r json.RawMessage) ([]json.RawMessage, error) {
 	return m, nil
 }
 
-func getMapFromRawMessage(r json.RawMessage) (map[string]json.RawMessage, error) {
+func GetMapFromRawMessage(r json.RawMessage) (map[string]json.RawMessage, error) {
 	b, err := r.MarshalJSON()
 	if err != nil {
 		return nil, errors.Wrapf(err, "MarshalJSON(%s) failed: %s", r, err)
@@ -71,7 +81,7 @@ func getMapFromRawMessage(r json.RawMessage) (map[string]json.RawMessage, error)
 	return m, nil
 }
 
-func getSliceOfMapsFromRawMessage(r json.RawMessage) ([]map[string]json.RawMessage, error) {
+func GetSliceOfMapsFromRawMessage(r json.RawMessage) ([]map[string]json.RawMessage, error) {
 	b, err := r.MarshalJSON()
 	if err != nil {
 		return nil, errors.Wrapf(err, "MarshalJSON(%s) failed: %s", r, err)
