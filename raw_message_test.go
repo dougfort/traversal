@@ -1,4 +1,4 @@
-package main_test
+package traversal_test
 
 import (
 	"encoding/json"

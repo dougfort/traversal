@@ -1,8 +1,9 @@
-package main_test
+package traversal_test
 
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -123,6 +124,52 @@ func TestArrayPredicate(t *testing.T) {
 
 	// empty Array
 	err = tr.Start([]byte("[]")).ArrayPredicate(predicate).End(&buffer)
+	if err == nil {
+		t.Fatal("expecting error for empty Array")
+	}
+}
+
+func TestSelector(t *testing.T) {
+	var err error
+	var buffer bytes.Buffer
+	data := `[
+		{"key1": "value1"},
+		{"key2": "value2"},
+		{"key3": "value3"}
+		]`
+	selector := func(r json.RawMessage) (json.RawMessage, error) {
+		s, err := tr.GetSliceFromRawMessage(r)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, msg := range s {
+			m, err := tr.GetMapFromRawMessage(msg)
+			if err != nil {
+				return nil, err
+			}
+			v, ok := m["key3"]
+			if ok {
+				return v, nil
+			}
+		}
+
+		// if we make it here, we didn't find what we are looking for
+		return nil, fmt.Errorf("not found")
+	}
+
+	// valid key
+	err = tr.Start([]byte(data)).Selector(selector).End(&buffer)
+	if err != nil {
+		t.Fatalf("error from valid JSON: %s", err)
+	}
+
+	if buffer.String() != "\"value3\"" {
+		t.Fatalf("invalid output: expected '\"value3\"', found '%s'", buffer.String())
+	}
+
+	// empty Array
+	err = tr.Start([]byte("[]")).Selector(selector).End(&buffer)
 	if err == nil {
 		t.Fatal("expecting error for empty Array")
 	}
