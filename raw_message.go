@@ -1,4 +1,4 @@
-package main
+package traversal
 
 import (
 	"encoding/json"
