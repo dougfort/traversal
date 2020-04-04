@@ -1,3 +1,4 @@
+// package traversal for traversing JSON text
 package traversal
 
 import (
@@ -14,7 +15,7 @@ type Traversal struct {
 	msg json.RawMessage
 }
 
-// Start begins a Traversal by ijnitializing the internal state with JSON data.
+// Start begins a Traversal by initializing the internal state with JSON data.
 func Start(data []byte) *Traversal {
 	var t Traversal
 
@@ -52,15 +53,15 @@ func (t *Traversal) End(w io.Writer) error {
 //
 // given:
 //
-// {
-// 	"name": "tagging",
-// 	"category": "http"
-// }
-// key = "category"
+// 		{
+// 			"name": "tagging",
+// 			"category": "http"
+// 		}
+// 		key = "category"
 //
 // expecting
 //
-// \"http\" (the output is JSON)
+// 		\"http\" (the output is JSON)
 func (t *Traversal) ObjectKey(key string) *Traversal {
 	if t.err != nil {
 		return t
@@ -89,13 +90,13 @@ func (t *Traversal) ObjectKey(key string) *Traversal {
 //
 // given:
 //
-// [
-//	{"key": "value"}
-// ]
+// 		[
+//			{"key": "value"}
+// 		]
 //
 // expecting
 //
-// {"key": "value"}
+// 		{"key": "value"}
 //
 func (t *Traversal) ArraySingleton() *Traversal {
 	if t.err != nil {
@@ -124,29 +125,29 @@ func (t *Traversal) ArraySingleton() *Traversal {
 //
 // given:
 //
-// [
-//	{"key1": "value1"},
-//	{"key2": "value2"},
-//	{"key3": "value3"}
-// ]
+// 		[
+//			{"key1": "value1"},
+//			{"key2": "value2"},
+//			{"key3": "value3"}
+// 		]
 //
 // with predicate
 //
-// func(r json.RawMessage) bool {
-//		m, err := GetMapFromRawMessage(r)
-//	    if err != nil {
-//          return false
-//	    }
-//	    n, err := GetStringFromRawMessage(m["key3"])
-//	    if err != nil {
-//		    return false
-//      }
-//      return n == "value3"
-// }
+// 		func(r json.RawMessage) bool {
+//			m, err := GetMapFromRawMessage(r)
+//	    	if err != nil {
+//          	return false
+//	    	}
+//	    	n, err := GetStringFromRawMessage(m["key3"])
+//	    	if err != nil {
+//		    	return false
+//      	}
+//      	return n == "value3"
+// 		}
 //
 // expecting
 //
-// {"key3": "value3"}
+// 		{"key3": "value3"}
 //
 func (t *Traversal) ArrayPredicate(p func(json.RawMessage) bool) *Traversal {
 	if t.err != nil {
@@ -176,7 +177,7 @@ func (t *Traversal) ArrayPredicate(p func(json.RawMessage) bool) *Traversal {
 // Selector selects whatever you want from the current traversal
 //
 // The go language does not allow you to add methods to an object outside of its package
-// This gives you the ability to do just that
+// Selector gives you the ability to do just that
 // We ask that you adhere to the spirit of composotion
 // * No side effects
 // * Pass on some proper subset of the incoming json.RawMessage, without making changes to it
@@ -184,38 +185,38 @@ func (t *Traversal) ArrayPredicate(p func(json.RawMessage) bool) *Traversal {
 // for example, you could duplicate ArrayPredicate
 // given:
 //
-// [
-//	{"key1": "value1"},
-//	{"key2": "value2"},
-//	{"key3": "value3"}
-// ]
+// 		[
+//			{"key1": "value1"},
+//			{"key2": "value2"},
+//			{"key3": "value3"}
+// 		]
 //
 // with selector
 //
-//  func(r json.RawMessage) (json.RawMessage, error) {
-//		s, err := tr.GetSliceFromRawMessage(r)
-//		if err != nil {
-//			return nil, err
-//		}
-//
-//		for _, msg := range s {
-//			m, err := tr.GetMapFromRawMessage(msg)
+//  	func(r json.RawMessage) (json.RawMessage, error) {
+//			s, err := tr.GetSliceFromRawMessage(r)
 //			if err != nil {
 //				return nil, err
 //			}
-//			v, ok := m["key3"]
-//			if ok {
-//				return v, nil
-//			}
-//		}
 //
-// 		if we make it here, we didn't find what we are looking for
-//		return nil, fmt.Errorf("not found")
-// }
+//			for _, msg := range s {
+//				m, err := tr.GetMapFromRawMessage(msg)
+//				if err != nil {
+//					return nil, err
+//				}
+//				v, ok := m["key3"]
+//				if ok {
+//					return v, nil
+//				}
+//			}
+//
+// 			if we make it here, we didn't find what we are looking for
+//			return nil, fmt.Errorf("not found")
+// 		}
 //
 // expecting
 //
-// "value3"
+// 		"value3"
 //
 func (t *Traversal) Selector(s func(json.RawMessage) (json.RawMessage, error)) *Traversal {
 	if t.err != nil {

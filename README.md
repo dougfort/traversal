@@ -1,5 +1,7 @@
 # Traverse JSON Data
 
+[![godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/rs/zerolog)
+
 ## Synopsis
 
 Traverse is a `go` language utility for 'traversing' a block of JSON encoded text
