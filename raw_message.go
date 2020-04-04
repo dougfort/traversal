@@ -10,11 +10,11 @@ import (
 //
 // given:
 //
-// \"value\" (with quotes)
+// 		\"value\" (with quotes)
 //
 // expecting:
 //
-// value
+// 		value
 //
 func GetStringFromRawMessage(r json.RawMessage) (string, error) {
 	b, err := r.MarshalJSON()
@@ -33,11 +33,11 @@ func GetStringFromRawMessage(r json.RawMessage) (string, error) {
 //
 // given:
 //
-// true (string)
+// 		true (string)
 //
 // expecting:
 //
-// true (boolean)
+// 		true (boolean)
 //
 func GetBoolFromRawMessage(r json.RawMessage) (bool, error) {
 	b, err := r.MarshalJSON()
@@ -56,11 +56,11 @@ func GetBoolFromRawMessage(r json.RawMessage) (bool, error) {
 //
 // given:
 //
-// 42 (string)
+// 		42 (string)
 //
 // expecting:
 //
-// 42 (int32)
+// 		42 (int32)
 //
 func GetInt32FromRawMessage(r json.RawMessage) (int32, error) {
 	b, err := r.MarshalJSON()
@@ -75,21 +75,21 @@ func GetInt32FromRawMessage(r json.RawMessage) (int32, error) {
 	return i, nil
 }
 
-// GetSliceFromRawMessage returns a slice of json.RawMessage a JSON RawMessage
+// GetSliceFromRawMessage returns a slice of json.RawMessage from a JSON RawMessage
 //
 // given:
 //
-// [
-//   "a": "a1",
-//   "b": "b1"
-// ]
+// 		[
+//   		"a": "a1",
+//   		"b": "b1"
+// 		]
 //
 // expecting:
 //
-// []json.RawMessage{
-//    json.RawMessage{"a": "a1"},
-//    json.RawMessage{"b": "b1"}
-// }
+// 		[]json.RawMessage{
+//  		json.RawMessage{"a": "a1"},
+//    		json.RawMessage{"b": "b1"}
+// 		}
 //
 func GetSliceFromRawMessage(r json.RawMessage) ([]json.RawMessage, error) {
 	b, err := r.MarshalJSON()
@@ -104,6 +104,22 @@ func GetSliceFromRawMessage(r json.RawMessage) ([]json.RawMessage, error) {
 	return m, nil
 }
 
+// GetMapFromRawMessage returns a map[string]json.RawMessage from a JSON RawMessage
+//
+// given:
+//
+// 		{
+//   		"a": "a1",
+//   		"b": "b1"
+// 		}
+//
+// expecting:
+//
+// 		map[string]json.RawMessage{
+//  		"a": json.RawMessage{"a1"},
+//    		"b": json.RawMessage{"b1"}
+// 		}
+//
 func GetMapFromRawMessage(r json.RawMessage) (map[string]json.RawMessage, error) {
 	b, err := r.MarshalJSON()
 	if err != nil {
