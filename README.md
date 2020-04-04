@@ -1,6 +1,6 @@
 # Traverse JSON Data
 
-[![godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/rs/zerolog)
+[![godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/dougfort/traversal)
 
 ## Synopsis
 
