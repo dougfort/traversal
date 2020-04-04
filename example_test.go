@@ -19,7 +19,7 @@ func ExampleStart() {
 	tr.Start(data)
 }
 
-func ExampleEnd() {
+func ExampleTraversal_End() {
 	data, _ := json.Marshal(&testType{A: "a", B: 43, C: true})
 
 	tr.Start(data).End(os.Stdout)
@@ -27,7 +27,7 @@ func ExampleEnd() {
 	// Output: {"A":"a","B":43,"C":true}
 }
 
-func ExampleObjectKey() {
+func ExampleTraversal_ObjectKey() {
 	data, _ := json.Marshal(&testType{A: "a", B: 43, C: true})
 
 	tr.Start(data).ObjectKey("B").End(os.Stdout)
@@ -35,7 +35,7 @@ func ExampleObjectKey() {
 	// Output: 43
 }
 
-func ExampleArraySingleton() {
+func ExampleTraversal_ArraySingleton() {
 	data, _ := json.Marshal([]testType{{A: "a", B: 43, C: true}})
 
 	tr.Start(data).ArraySingleton().End(os.Stdout)
@@ -43,7 +43,7 @@ func ExampleArraySingleton() {
 	// Output: {"A":"a","B":43,"C":true}
 }
 
-func ExampleArrayPredicate() {
+func ExampleTraversal_ArrayPredicate() {
 	data, _ := json.Marshal([]testType{
 		{A: "a", B: 43, C: true},
 		{A: "a", B: 41, C: true},
@@ -66,7 +66,7 @@ func ExampleArrayPredicate() {
 	// Output: {"A":"a","B":41,"C":true}
 }
 
-func ExampleSelector() {
+func ExampleTraversal_Selector() {
 	data, _ := json.Marshal([]testType{
 		{A: "a", B: 43, C: true},
 		{A: "a", B: 41, C: true},
