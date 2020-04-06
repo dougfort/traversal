@@ -133,7 +133,7 @@ func GetMapFromRawMessage(r json.RawMessage) (map[string]json.RawMessage, error)
 	return m, nil
 }
 
-// GetRawMessage returns the json.RawMessage at next step of indention in a JSON structure
+// GetMsgFromRawMessage returns the json.RawMessage at next step of indention in a JSON structure
 // given:
 //
 // 		{

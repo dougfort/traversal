@@ -1,4 +1,4 @@
-// package traversal for traversing JSON text
+// Package traversal for traversing JSON text
 package traversal
 
 import (
@@ -145,13 +145,6 @@ func (t *Traversal) ArraySlice() *Traversal {
 	if err != nil {
 		return &Traversal{
 			err: errors.Wrap(err, "getSliceFromRawMessage"),
-			msg: nil,
-		}
-	}
-
-	if len(s) == 0 {
-		return &Traversal{
-			err: errors.Errorf("Array has %d, items", len(s)),
 			msg: nil,
 		}
 	}
