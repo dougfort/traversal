@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	tr "github.com/dougfort/traversal"
+	"github.com/pkg/errors"
 )
 
 func TestStartAndEnd(t *testing.T) {
@@ -126,6 +127,39 @@ func TestArrayPredicate(t *testing.T) {
 	err = tr.Start([]byte("[]")).ArrayPredicate(predicate).End(&buffer)
 	if err == nil {
 		t.Fatal("expecting error for empty Array")
+	}
+}
+
+func TestArraySlice(t *testing.T) {
+	var err error
+	var buffer bytes.Buffer
+	data := `[
+		{"name": "tagging"},
+		{"name": "tag"}
+	]`
+
+	// valid key
+	err = tr.Start([]byte(data)).ArraySlice().End(&buffer)
+	if err != nil {
+		t.Fatalf("error from valid JSON: %s", err)
+	}
+
+	if buffer.String() != data {
+		t.Fatalf("expected: %s, received: %s", data, buffer.String())
+	}
+
+	// Test to see if we can unmarshal the bytes from ArraySlice() into a slice
+	type testJSON struct {
+		Name string `json:"name"`
+	}
+	var testArray []testJSON
+	err = json.Unmarshal(buffer.Bytes(), &testArray)
+	if err != nil {
+		t.Fatal(errors.Wrap(err, "failed to unmarshal msg from raw message"))
+	}
+
+	if len(testArray) == 0 {
+		t.Fatalf("expected length greater than 0 for testArray")
 	}
 }
 

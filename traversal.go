@@ -1,4 +1,4 @@
-// package traversal for traversing JSON text
+// Package traversal for traversing JSON text
 package traversal
 
 import (
@@ -119,6 +119,37 @@ func (t *Traversal) ArraySingleton() *Traversal {
 	}
 
 	return &Traversal{err: nil, msg: s[0]}
+}
+
+// ArraySlice selects a whole slice from an Array in JSON
+// It will fail if the Array does not have any elemants
+//
+// given:
+//
+// 		[
+//			{"key": "value"}
+// 		]
+//
+// expecting
+//
+// 		[
+//			{"key": "value"}
+//		]
+//
+func (t *Traversal) ArraySlice() *Traversal {
+	if t.err != nil {
+		return t
+	}
+
+	s, err := GetMsgFromRawMessage(t.msg)
+	if err != nil {
+		return &Traversal{
+			err: errors.Wrap(err, "getSliceFromRawMessage"),
+			msg: nil,
+		}
+	}
+
+	return &Traversal{err: nil, msg: s}
 }
 
 // ArrayPredicate selects an entry from an Array based on a predicate

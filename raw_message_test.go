@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	tr "github.com/dougfort/traversal"
+	"github.com/pkg/errors"
 )
 
 func TestGetStringFromRawMessage(t *testing.T) {
@@ -102,5 +103,31 @@ func TestGetSliceFromRawMessage(t *testing.T) {
 	}
 	if string(result1) != "{\"b\": \"b1\"}" {
 		t.Fatalf("result1 = %s", result1)
+	}
+}
+
+func TestGetMsgFromRawMessage(t *testing.T) {
+	var err error
+	const testString = "test string"
+	testJSON := fmt.Sprintf("\"%s\"", testString)
+
+	var rawMessage json.RawMessage
+	err = rawMessage.UnmarshalJSON([]byte(testJSON))
+	if err != nil {
+		t.Fatalf("rawMessage.UnmarshalJSON() failed: %s", err)
+	}
+
+	result, err := tr.GetMsgFromRawMessage(rawMessage)
+	if err != nil {
+		t.Fatalf("GetStringFromRawMessage(%s) failed: %s", rawMessage, err)
+	}
+
+	var res string
+	err = json.Unmarshal(result, &res)
+	if err != nil {
+		t.Fatal(errors.Wrap(err, "failed to unmarshal msg from raw message"))
+	}
+	if res != testString {
+		t.Fatalf("expected '%s', got '%s", testString, result)
 	}
 }

@@ -43,6 +43,14 @@ func ExampleTraversal_ArraySingleton() {
 	// Output: {"A":"a","B":43,"C":true}
 }
 
+func ExampleTraversal_ArraySlice() {
+	data, _ := json.Marshal([]testType{{A: "a", B: 43, C: true}})
+
+	tr.Start(data).ArraySlice().End(os.Stdout)
+
+	// Output: [{"A":"a","B":43,"C":true}]
+}
+
 func ExampleTraversal_ArrayPredicate() {
 	data, _ := json.Marshal([]testType{
 		{A: "a", B: 43, C: true},
