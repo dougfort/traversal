@@ -98,7 +98,7 @@ func GetSliceFromRawMessage(r json.RawMessage) ([]json.RawMessage, error) {
 	}
 	var m []json.RawMessage
 	if err = json.Unmarshal(b, &m); err != nil {
-		return nil, errors.Wrapf(err, "json.Unmarshal(%s failed: %s", b, err)
+		return nil, errors.Wrapf(err, "json.Unmarshal(%s) failed: %s", b, err)
 	}
 
 	return m, nil
@@ -128,6 +128,35 @@ func GetMapFromRawMessage(r json.RawMessage) (map[string]json.RawMessage, error)
 	var m map[string]json.RawMessage
 	if err = json.Unmarshal(b, &m); err != nil {
 		return nil, errors.Wrapf(err, "json.Unmarshal(%s failed: %s", b, err)
+	}
+
+	return m, nil
+}
+
+// GetRawMessage returns the json.RawMessage at next step of indention in a JSON structure
+// given:
+//
+// 		{
+//   		"a": "a1",
+//   		"b": "b1"
+// 		}
+//
+// expecting:
+//
+// 		[]json.RawMessage{
+//  		json.RawMessage{"a": "a1"},
+//    		json.RawMessage{"b": "b1"}
+// 		}
+//
+func GetMsgFromRawMessage(r json.RawMessage) (json.RawMessage, error) {
+	b, err := r.MarshalJSON()
+	if err != nil {
+		return nil, errors.Wrapf(err, "MarshalJSON(%s) failed: %s", r, err)
+	}
+
+	var m json.RawMessage
+	if err = json.Unmarshal(b, &m); err != nil {
+		return nil, errors.Wrapf(err, "json.Unmarshal(%s) failed %s", b, err)
 	}
 
 	return m, nil
