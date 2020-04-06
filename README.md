@@ -23,6 +23,7 @@ text.
 * `End` - extract the traversal state, or report error
 * `ObjectKey` - pull an item out of a JSON Object, and make that the new state
 * `ArraySingleton` - select the only item in a 1 item JSON Array and make that the new state
+* `ArraySlice` - select a JSON array as a slice and make that the new state
 * `ArrayPredicate` - select an item from a JSON Array based on a predicate function and make that the new state
 * `Selector` - use a selector function to select whatever you want from the current state and make that the new state
 
@@ -40,6 +41,7 @@ your own components.
 * `GetInt32FromRawMessage`
 * `GetSliceFromRawMessage`
 * `GetMapFromRawMessage`
+* `GetMsgFromRawMessage`
 
 ## Example
 
