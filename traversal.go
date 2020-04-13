@@ -9,10 +9,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	ErrorEmptyArray = errors.Errorf("No entries in Array")
+)
+
 // Traversal holds the state while travering JSON
 type Traversal struct {
-	err error
-	msg json.RawMessage
+
+	// Err passes on an error
+	// If Err is not nil, a componenet should just pass on the state
+	Err error
+
+	// Array represents the top level of JSON, which may be a single entry
+	// It should never be empty
+	Array []json.RawMessage
 }
 
 // Start begins a Traversal by initializing the internal state with JSON data.
@@ -20,23 +30,24 @@ func Start(data []byte) *Traversal {
 	var t Traversal
 
 	if json.Valid(data) {
-		t.err = t.msg.UnmarshalJSON(data)
+		t.Array = make([]json.RawMessage, 1)
+		t.Err = t.Array[0].UnmarshalJSON(data)
 	} else {
-		t.err = errors.Errorf("Invalid JSON")
+		t.Err = errors.Errorf("Invalid JSON")
 	}
 
 	return &t
 }
 
 // End terminates a Traversal
-// If there is no error, End writes the internal state to the writer
+// If there is no error, End writes Array[0] to the io.Writer
 // Note that a useful tool in debugging is to dump to os.Stdout
 func (t *Traversal) End(w io.Writer) error {
-	if t.err != nil {
-		return t.err
+	if t.Err != nil {
+		return t.Err
 	}
 
-	data, err := t.msg.MarshalJSON()
+	data, err := t.Array[0].MarshalJSON()
 	if err != nil {
 		return errors.Wrap(err, "io.Write")
 	}
@@ -49,7 +60,9 @@ func (t *Traversal) End(w io.Writer) error {
 	return nil
 }
 
-// ObjectKey selects a key from a JSON object (go map)
+// ObjectKey replaces each element of Array with the contents of an Object at key
+// This function assumes that each element of Array can be marshalled to an Object
+// and that each Object has a value for key
 //
 // given:
 //
@@ -63,66 +76,35 @@ func (t *Traversal) End(w io.Writer) error {
 //
 // 		\"http\" (the output is JSON)
 func (t *Traversal) ObjectKey(key string) *Traversal {
-	if t.err != nil {
+	if t.Err != nil {
 		return t
 	}
 
-	m, err := GetMapFromRawMessage(t.msg)
-	if err != nil {
-		return &Traversal{
-			err: errors.Wrap(err, "getMapFromRawMessage"),
-			msg: nil,
+	for i := 0; i < len(t.Array); i++ {
+		m, err := GetMapFromRawMessage(t.Array[i])
+		if err != nil {
+			return &Traversal{
+				Err:   errors.Wrapf(err, "%d: GetMapFromRawMessage", i),
+				Array: nil,
+			}
+		}
+
+		var ok bool
+		t.Array[i], ok = m[key]
+		if !ok {
+			return &Traversal{
+				Err:   errors.Errorf("%d: No entry for key '%s'", i, key),
+				Array: nil,
+			}
 		}
 	}
 
-	msg, ok := m[key]
-	if !ok {
-		return &Traversal{
-			err: errors.Errorf("No entry for key '%s'", key),
-			msg: nil,
-		}
-	}
-	return &Traversal{err: nil, msg: msg}
+	return t
 }
 
-// ArraySingleton selects the only entry from an Array.
-// It will fail if the Array does not have exactly one item.
-//
-// given:
-//
-// 		[
-//			{"key": "value"}
-// 		]
-//
-// expecting
-//
-// 		{"key": "value"}
-//
-func (t *Traversal) ArraySingleton() *Traversal {
-	if t.err != nil {
-		return t
-	}
-
-	s, err := GetSliceFromRawMessage(t.msg)
-	if err != nil {
-		return &Traversal{
-			err: errors.Wrap(err, "getSliceFromRawMessage"),
-			msg: nil,
-		}
-	}
-
-	if len(s) != 1 {
-		return &Traversal{
-			err: errors.Errorf("Array has %d items", len(s)),
-			msg: nil,
-		}
-	}
-
-	return &Traversal{err: nil, msg: s[0]}
-}
-
-// ArraySlice selects a whole slice from an Array in JSON
-// It will fail if the Array does not have any elemants
+// ArraySlice replaces the current Array with a slice unmarshalled from Array[0]
+// It will fail if source Array does not exactly one element
+// It will fail if the resulting Array does not have any elements
 //
 // given:
 //
@@ -137,22 +119,36 @@ func (t *Traversal) ArraySingleton() *Traversal {
 //		]
 //
 func (t *Traversal) ArraySlice() *Traversal {
-	if t.err != nil {
+	if t.Err != nil {
 		return t
 	}
+	var err error
 
-	s, err := GetMsgFromRawMessage(t.msg)
-	if err != nil {
+	if len(t.Array) != 1 {
 		return &Traversal{
-			err: errors.Wrap(err, "getSliceFromRawMessage"),
-			msg: nil,
+			Err:   errors.Wrapf(err, "Expecting Array size of 1; found %d", len(t.Array)),
+			Array: nil,
 		}
 	}
 
-	return &Traversal{err: nil, msg: s}
+	t.Array, err = GetSliceFromRawMessage(t.Array[0])
+	if err != nil {
+		return &Traversal{
+			Err:   errors.Wrap(err, "GetSliceFromRawMessage"),
+			Array: nil,
+		}
+	}
+	if len(t.Array) == 0 {
+		return &Traversal{
+			Err:   ErrorEmptyArray,
+			Array: nil,
+		}
+	}
+
+	return t
 }
 
-// ArrayPredicate selects an entry from an Array based on a predicate
+// Filter replaces the current Array
 //
 // given:
 //
@@ -180,29 +176,26 @@ func (t *Traversal) ArraySlice() *Traversal {
 //
 // 		{"key3": "value3"}
 //
-func (t *Traversal) ArrayPredicate(p func(json.RawMessage) bool) *Traversal {
-	if t.err != nil {
+func (t *Traversal) Filter(p func(json.RawMessage) bool) *Traversal {
+	if t.Err != nil {
 		return t
 	}
 
-	s, err := GetSliceFromRawMessage(t.msg)
-	if err != nil {
+	var array []json.RawMessage
+	for _, entry := range t.Array {
+		if p(entry) {
+			array = append(array, entry)
+		}
+	}
+
+	if len(array) == 0 {
 		return &Traversal{
-			err: errors.Wrap(err, "getSliceFromRawMessage"),
-			msg: nil,
+			Err:   ErrorEmptyArray,
+			Array: nil,
 		}
 	}
 
-	for _, msg := range s {
-		if p(msg) {
-			return &Traversal{err: nil, msg: msg}
-		}
-	}
-
-	return &Traversal{
-		err: errors.Errorf("No Array item satisfies the predicate: %s", t.msg),
-		msg: nil,
-	}
+	return &Traversal{Err: nil, Array: array}
 }
 
 // Selector selects whatever you want from the current traversal
@@ -249,13 +242,13 @@ func (t *Traversal) ArrayPredicate(p func(json.RawMessage) bool) *Traversal {
 //
 // 		"value3"
 //
-func (t *Traversal) Selector(s func(json.RawMessage) (json.RawMessage, error)) *Traversal {
-	if t.err != nil {
+func (t *Traversal) Selector(s func([]json.RawMessage) ([]json.RawMessage, error)) *Traversal {
+	if t.Err != nil {
 		return t
 	}
 
 	var result Traversal
-	result.msg, result.err = s(t.msg)
+	result.Array, result.Err = s(t.Array)
 
 	return &result
 }
