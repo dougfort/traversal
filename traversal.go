@@ -198,6 +198,42 @@ func (t *Traversal) Filter(p func(json.RawMessage) bool) *Traversal {
 	return &Traversal{Err: nil, Array: array}
 }
 
+// Inspect inspects the current Array without chaninging it
+//
+// given:
+//
+// 		[
+//			{"key1": "value1"},
+//			{"key2": "value2"},
+//			{"key3": "value3"}
+// 		]
+//
+// with function
+//
+// 		func(r json.RawMessage) {
+//			m, err := GetMapFromRawMessage(r)
+//	    	if err != nil {
+//          	return false
+//	    	}
+///      	log.Printf("keys = %s", m.keys())
+// 		}
+//
+// expecting
+//
+// 		keys = key1, key2, key3
+//
+func (t *Traversal) Inspect(inspect func(json.RawMessage)) *Traversal {
+	if t.Err != nil {
+		return t
+	}
+
+	for _, entry := range t.Array {
+		inspect(entry)
+	}
+
+	return t
+}
+
 // Selector selects whatever you want from the current traversal
 //
 // The go language does not allow you to add methods to an object outside of its package

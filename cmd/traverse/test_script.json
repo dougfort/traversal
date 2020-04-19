@@ -1,0 +1,15 @@
+[
+    {
+        "name": "start"
+    },
+    {   
+        "name": "object-key",
+        "key": "configs"
+    },
+    {
+        "name": "array-slice"
+    },
+    {
+        "name": "inspect"
+    }
+]

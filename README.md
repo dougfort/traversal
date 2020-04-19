@@ -5,7 +5,7 @@
 ## Synopsis
 
 Traverse is a `go` language utility for 'traversing' a block of JSON encoded text
-and returning a selected piece of content.
+and returning selected content.
 
 Starting with a `go` [RawMessage](<https://golang.org/pkg/encoding/json/#RawMessage>),
 traverse subdivides `RawMessage`s until we have the one we want.
