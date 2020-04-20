@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"testing"
 
 	tr "github.com/dougfort/traversal"
@@ -212,55 +210,4 @@ func TestExample(t *testing.T) {
 	}
 
 	t.Logf("%s", buffer.String())
-}
-
-func TestTraversal(t *testing.T) {
-	const testFilePath = "configs.json"
-	data, err := ioutil.ReadFile(testFilePath)
-	if err != nil {
-		t.Fatalf("ioutil.ReadFile(%s) failed: %s", testFilePath, err)
-	}
-
-	err = tr.Start(data).
-		ObjectKey("configs").
-		ArraySlice().
-		Filter(func(r json.RawMessage) bool {
-			m, err := tr.GetMapFromRawMessage(r)
-			if err != nil {
-				return false
-			}
-			n, err := tr.GetStringFromRawMessage(m["@type"])
-			if err != nil {
-				return false
-			}
-			return n == "type.googleapis.com/envoy.admin.v3.BootstrapConfigDump"
-		}).
-		ObjectKey("bootstrap").
-		ObjectKey("static_resources").
-		ObjectKey("listeners").
-		ArraySlice().
-		ObjectKey("filter_chains").
-		ArraySlice().
-		ObjectKey("filters").
-		ArraySlice().
-		ObjectKey("typed_config").
-		ObjectKey("http_filters").
-		ArraySlice().
-		Filter(func(r json.RawMessage) bool {
-			m, err := tr.GetMapFromRawMessage(r)
-			if err != nil {
-				return false
-			}
-			n, err := tr.GetStringFromRawMessage(m["name"])
-			if err != nil {
-				return false
-			}
-			return n == "gm.metrics"
-		}).
-		ObjectKey("typed_config").
-		ObjectKey("value").
-		End(os.Stdout)
-	if err != nil {
-		t.Fatalf("Traversal failed: %s", err)
-	}
 }

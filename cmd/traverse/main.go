@@ -50,7 +50,7 @@ func main() {
 			log.Printf("Start")
 			traversal = tr.Start(data)
 			if traversal.Err != nil {
-				log.Fatalf("Traversal Err = %s", err)
+				log.Fatalf("Traversal Err = %s", traversal.Err)
 			}
 			log.Printf("#%d: Start: %d", i+1, len(traversal.Array))
 		case "object-key":
@@ -60,30 +60,63 @@ func main() {
 			}
 			traversal = traversal.ObjectKey(key)
 			if traversal.Err != nil {
-				log.Fatalf("Traversal Err = %s", err)
+				log.Fatalf("Traversal Err = %s", traversal.Err)
 			}
 			log.Printf("#%d: ObjectKey(%s): %d", i+1, key, len(traversal.Array))
 		case "array-slice":
 			traversal = traversal.ArraySlice()
 			if traversal.Err != nil {
-				log.Fatalf("Traversal Err = %s", err)
+				log.Fatalf("Traversal Err = %s", traversal.Err)
 			}
 			log.Printf("#%d: ArraySlice:, %d", i+1, len(traversal.Array))
 		case "inspect":
+			key, err := tr.GetStringFromRawMessage(rawMap["key"])
+			if err != nil {
+				log.Fatalf("tr.GetStringFromRawMessage(%s) failed: %s", rawMap["key"], err)
+			}
 			traversal.Inspect(func(r json.RawMessage) {
 				m, err := tr.GetMapFromRawMessage(r)
 				if err != nil {
 					log.Printf("ERROR: %s", err)
 				} else {
-					var keys []string
-					for key := range m {
-						keys = append(keys, key)
+					value, err := tr.GetStringFromRawMessage(m[key])
+					if err != nil {
+						log.Printf("ERROR: %s", err)
+					} else {
+						log.Println(value)
 					}
-					log.Printf("keys = %s", keys)
 				}
 			})
 
 			log.Printf("#%d: Inspect:, %d", i+1, len(traversal.Array))
+		case "filter":
+			key, err := tr.GetStringFromRawMessage(rawMap["key"])
+			if err != nil {
+				log.Fatalf("tr.GetStringFromRawMessage(%s) failed: %s", rawMap["key"], err)
+			}
+			value, err := tr.GetStringFromRawMessage(rawMap["value"])
+			if err != nil {
+				log.Fatalf("tr.GetStringFromRawMessage(%s) failed: %s", rawMap["value"], err)
+			}
+
+			traversal = traversal.Filter(func(r json.RawMessage) bool {
+				m, err := tr.GetMapFromRawMessage(r)
+				if err != nil {
+					return false
+				}
+
+				v, err := tr.GetStringFromRawMessage(m[key])
+				if err != nil {
+					return false
+				}
+
+				return v == value
+			})
+			if traversal.Err != nil {
+				log.Fatalf("Traversal Err = %s", traversal.Err)
+			}
+
+			log.Printf("#%d: Filter:, %d", i+1, len(traversal.Array))
 		default:
 			log.Printf("#%d: Unknown name: '%s'", i+1, name)
 		}

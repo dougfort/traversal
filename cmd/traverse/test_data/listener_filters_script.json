@@ -1,0 +1,46 @@
+[
+    {
+        "name": "start"
+    },
+    {   
+        "name": "object-key",
+        "key": "configs"
+    },
+    {
+        "name": "array-slice"
+    },
+    {
+        "name": "filter",
+        "key": "@type",
+        "value": "type.googleapis.com/envoy.admin.v3.ListenersConfigDump"
+    },
+    {   
+        "name": "object-key",
+        "key": "dynamic_listeners"
+    },
+    {
+        "name": "array-slice"
+    },
+    {   
+        "name": "object-key",
+        "key": "active_state"
+    },
+    {   
+        "name": "object-key",
+        "key": "listener"
+    },
+    {   
+        "name": "object-key",
+        "key": "filter_chains"
+    },
+    {
+        "name": "array-slice"
+    },
+    {   
+        "name": "object-key",
+        "key": "filters"
+    },
+    {
+        "name": "array-slice"
+    }
+]
